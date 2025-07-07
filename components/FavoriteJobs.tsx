@@ -1,18 +1,19 @@
-"use client";
+'use client';
 
-import { useFavorites } from "@/contexts/FavoritesContext";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Heart, ExternalLink, MapPin, Building, Trash2 } from "lucide-react";
-import { Job } from "@/app/job-search/columns";
+import { useFavorites } from '@/contexts/FavoritesContext';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Heart, ExternalLink, MapPin, Building, Trash2 } from 'lucide-react';
+import ApplyButton from '@/components/ApplyButton';
+import { Job } from '@/app/job-search/columns';
 
 const FavoriteJobs = () => {
   const { favorites, removeFromFavorites, clearFavorites } = useFavorites();
 
   const generateJobId = (job: Job): string => {
     return `${job.employer_name}-${job.job_title}-${job.job_location}`
-      .replace(/\s+/g, "-")
+      .replace(/\s+/g, '-')
       .toLowerCase();
   };
 
@@ -23,7 +24,7 @@ const FavoriteJobs = () => {
 
   const handleApplyToJob = (url: string) => {
     if (url) {
-      window.open(url, "_blank");
+      window.open(url, '_blank');
     }
   };
 
@@ -99,15 +100,7 @@ const FavoriteJobs = () => {
                 )}
               </div>
 
-              <Button
-                size="sm"
-                onClick={() => handleApplyToJob(job.job_apply_link)}
-                className="w-full h-7 text-xs"
-                disabled={!job.job_apply_link}
-              >
-                <ExternalLink className="h-3 w-3 mr-1" />
-                Apply Now
-              </Button>
+              <ApplyButton job={job} className="w-full h-7 text-xs" />
             </div>
           </Card>
         ))}

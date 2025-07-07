@@ -1,9 +1,9 @@
 import { AppSidebar } from '@/components/app-sidebar';
+import AppliedJobsList from '@/components/AppliedJobsList';
 import { SiteHeader } from '@/components/site-header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
-import FavoriteJobs from '@/components/FavoriteJobs';
 
-const FavoritesPage = () => {
+const AppliedPage = () => {
   return (
     <SidebarProvider
       style={
@@ -20,13 +20,13 @@ const FavoritesPage = () => {
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
               <div className="space-y-4 px-4">
-                <h1 className="text-2xl font-bold">Favorite Jobs</h1>
+                <h1 className="text-2xl font-bold">Applied Jobs</h1>
                 <p className="text-muted-foreground">
-                  Manage your favorite jobs and apply to them when you're ready.
+                  Track the jobs you've applied to and manage your applications.
                 </p>
               </div>
-              <div className="max-w-4xl mx-auto">
-                <FavoriteJobs />
+              <div className="max-w-4xl">
+                <AppliedJobsList />
               </div>
             </div>
           </div>
@@ -36,4 +36,4 @@ const FavoritesPage = () => {
   );
 };
 
-export default FavoritesPage;
+export default AppliedPage;
