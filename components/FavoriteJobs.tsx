@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Heart, ExternalLink, MapPin, Building, Trash2 } from 'lucide-react';
 import ApplyButton from '@/components/ApplyButton';
+import CopyToClipboard from '@/components/CopyToClipboard';
 import { Job } from '@/app/job-search/columns';
 
 const FavoriteJobs = () => {
@@ -17,9 +18,9 @@ const FavoriteJobs = () => {
       .toLowerCase();
   };
 
-  const handleRemoveFavorite = (job: Job) => {
+  const handleRemoveFavorite = async (job: Job) => {
     const jobId = generateJobId(job);
-    removeFromFavorites(jobId);
+    await removeFromFavorites(jobId);
   };
 
   const handleApplyToJob = (url: string) => {
@@ -56,7 +57,7 @@ const FavoriteJobs = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={clearFavorites}
+            onClick={async () => await clearFavorites()}
             className="h-6 px-2 text-xs text-muted-foreground hover:text-destructive"
           >
             <Trash2 className="h-3 w-3" />
@@ -100,7 +101,15 @@ const FavoriteJobs = () => {
                 )}
               </div>
 
-              <ApplyButton job={job} className="w-full h-7 text-xs" />
+              <div className="flex items-center gap-2">
+                <ApplyButton job={job} className="flex-1 h-7 text-xs" />
+                <CopyToClipboard
+                  text={job.job_description}
+                  size="sm"
+                  className="h-7 px-2"
+                  showText={false}
+                />
+              </div>
             </div>
           </Card>
         ))}

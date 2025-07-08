@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import * as React from "react";
+import * as React from 'react';
 import {
   ColumnDef,
   SortingState,
@@ -9,7 +9,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from "@tanstack/react-table";
+} from '@tanstack/react-table';
 
 import {
   Table,
@@ -18,15 +18,15 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { useEffect, useState } from "react";
-import { fetchJobs } from "@/actions/auth";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/table';
+import { useEffect, useState } from 'react';
+import { fetchJobs } from '@/actions/auth';
+import { Button } from '@/components/ui/button';
+import { Job } from './columns';
 
-interface JobTableProps<TQuery, TValue> {
-  columns: ColumnDef<TQuery, TValue>[];
+interface JobTableProps<TValue> {
+  columns: ColumnDef<Job, TValue>[];
   query: string; // Add query as a required prop
-  //   data: TData[];
 }
 
 interface JobsListProps {
@@ -48,13 +48,9 @@ interface JobsListProps {
     Responsibilities: string[];
   };
 }
-const JobTable = <TValue,>({
-  columns,
-  query,
-  //   data,
-}: JobTableProps<JobsListProps, TValue>) => {
+const JobTable = <TValue,>({ columns, query }: JobTableProps<TValue>) => {
   const [sorting, setSorting] = useState<SortingState>([]); // State to manage sorting
-  const [jobs, setJobs] = useState<JobsListProps[]>([]); // Initialize state for jobs
+  const [jobs, setJobs] = useState<Job[]>([]); // Initialize state for jobs
   const [loading, setLoading] = useState<boolean>(true); // State to manage loading status
 
   const table = useReactTable({
@@ -78,7 +74,7 @@ const JobTable = <TValue,>({
         const fetchedJobs = await fetchJobs({ searchItem: query });
         setJobs(fetchedJobs || []); // Set jobs state with fetched data
       } catch (error) {
-        console.error("Error fetching jobs:", error);
+        console.error('Error fetching jobs:', error);
       } finally {
         setLoading(false); // Set loading to false after fetching
       }
@@ -100,7 +96,7 @@ const JobTable = <TValue,>({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext(),
+                            header.getContext()
                           )}
                     </TableHead>
                   );
@@ -113,13 +109,13 @@ const JobTable = <TValue,>({
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
+                  data-state={row.getIsSelected() && 'selected'}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext(),
+                        cell.getContext()
                       )}
                     </TableCell>
                   ))}

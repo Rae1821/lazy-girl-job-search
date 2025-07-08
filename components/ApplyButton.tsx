@@ -25,22 +25,30 @@ const ApplyButton = ({
 }: ApplyButtonProps) => {
   const { markAsApplied, isApplied } = useFavorites();
   const [isClicked, setIsClicked] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const jobApplied = isApplied(job);
 
-  const handleApply = () => {
+  const handleApply = async () => {
     if (job.job_apply_link) {
       window.open(job.job_apply_link, '_blank');
 
       // Mark as applied after opening the link
       if (!jobApplied) {
-        markAsApplied(job);
-        setIsClicked(true);
+        setIsLoading(true);
+        try {
+          await markAsApplied(job);
+          setIsClicked(true);
 
-        // Reset the clicked state after animation
-        setTimeout(() => {
-          setIsClicked(false);
-        }, 2000);
+          // Reset the clicked state after animation
+          setTimeout(() => {
+            setIsClicked(false);
+          }, 2000);
+        } catch (error) {
+          console.error('Error marking job as applied:', error);
+        } finally {
+          setIsLoading(false);
+        }
       }
     }
   };
@@ -89,6 +97,7 @@ const ApplyButton = ({
             variant="outline"
             size={size}
             onClick={handleApply}
+            disabled={isLoading}
             className={`${className} hover:bg-blue-50 hover:text-blue-600 transition-all ${
               isClicked ? 'bg-green-50 text-green-600 border-green-200' : ''
             }`}

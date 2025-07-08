@@ -4,8 +4,7 @@ import React, { useState } from 'react';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { Button } from './ui/button';
-import { set } from 'zod';
-import { compareResume } from '@/actions/auth';
+import { generateComparison } from '@/actions/auth';
 
 const ResumeAnalysis = () => {
   const [resume, setResume] = useState('');
@@ -20,7 +19,8 @@ const ResumeAnalysis = () => {
     const userInput = { resume, jobDescription };
 
     try {
-      await compareResume(userInput);
+      const result = await generateComparison(userInput);
+      console.log(result);
     } catch (error) {
       console.error('Error comparing resume:', error);
       alert(

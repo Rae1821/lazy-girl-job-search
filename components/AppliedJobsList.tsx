@@ -13,6 +13,7 @@ import {
   Clock,
 } from 'lucide-react';
 import { Job } from '@/app/job-search/columns';
+import TruncatedText from '@/components/TruncatedText';
 
 const AppliedJobsList = () => {
   const { appliedJobs, removeFromApplied, clearApplied } = useFavorites();
@@ -23,9 +24,9 @@ const AppliedJobsList = () => {
       .toLowerCase();
   };
 
-  const handleRemoveApplied = (job: Job) => {
+  const handleRemoveApplied = async (job: Job) => {
     const jobId = generateJobId(job);
-    removeFromApplied(jobId);
+    await removeFromApplied(jobId);
   };
 
   const handleViewJob = (url: string) => {
@@ -62,7 +63,7 @@ const AppliedJobsList = () => {
           <Button
             variant="ghost"
             size="sm"
-            onClick={clearApplied}
+            onClick={async () => await clearApplied()}
             className="h-6 px-2 text-xs text-muted-foreground hover:text-destructive"
           >
             <Trash2 className="h-3 w-3" />
@@ -118,6 +119,21 @@ const AppliedJobsList = () => {
               </div>
 
               <div className="space-y-2">
+                {job.job_description && (
+                  <div className="border-t pt-2">
+                    <div className="text-xs font-medium text-muted-foreground mb-1">
+                      Job Description
+                    </div>
+                    <TruncatedText
+                      text={job.job_description}
+                      maxWords={15}
+                      maxLines={2}
+                      showCopyButton={true}
+                      className="text-xs"
+                    />
+                  </div>
+                )}
+
                 <Button
                   size="sm"
                   variant="outline"

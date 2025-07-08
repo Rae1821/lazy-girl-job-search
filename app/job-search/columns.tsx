@@ -107,7 +107,14 @@ const columns: ColumnDef<Job>[] = [
     size: 300,
     cell: ({ row }) => {
       const description = row.getValue('job_description') as string;
-      return <TruncatedText text={description} maxWords={20} maxLines={3} />;
+      return (
+        <TruncatedText
+          text={description}
+          maxWords={20}
+          maxLines={3}
+          showCopyButton={true}
+        />
+      );
     },
   },
   {

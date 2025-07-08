@@ -30,7 +30,7 @@ const SearchInput = () => {
         <Input
           type="text"
           name="searchItem"
-          placeholder="Search jobs..."
+          placeholder="Full Stack Developer, Remote"
           className=""
           onChange={(e) => {
             setSearchTerm(e.target.value);

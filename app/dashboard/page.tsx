@@ -8,8 +8,25 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 
 import data from './data.json';
 import JobTable from '../job-search/data-table';
+import { auth } from '@/auth';
+import db from '@/db';
 
-export default function Page() {
+export default async function Page() {
+  const session = await auth();
+
+  if (!session?.user?.email) {
+    throw new Error('User not found');
+  }
+
+  const userProfile = await db.user.findUnique({
+    where: {
+      email: session?.user.email ?? undefined,
+    },
+  });
+
+  if (!userProfile) {
+    throw new Error('User not found');
+  }
   return (
     <SidebarProvider
       style={
@@ -19,7 +36,7 @@ export default function Page() {
         } as React.CSSProperties
       }
     >
-      <AppSidebar variant="inset" />
+      <AppSidebar variant="inset" userProfile={userProfile} />
       <SidebarInset>
         <SiteHeader />
         <div className="flex flex-1 flex-col">

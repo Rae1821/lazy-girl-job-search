@@ -1,16 +1,16 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { Heart } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useFavorites } from "@/contexts/FavoritesContext";
-import { Job } from "@/app/job-search/columns";
+import { useState } from 'react';
+import { Heart } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useFavorites } from '@/contexts/FavoritesContext';
+import { Job } from '@/app/job-search/columns';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
+} from '@/components/ui/tooltip';
 
 interface FavoriteButtonProps {
   job: Job;
@@ -19,21 +19,29 @@ interface FavoriteButtonProps {
 const FavoriteButton = ({ job }: FavoriteButtonProps) => {
   const { addToFavorites, removeFromFavorites, isFavorite } = useFavorites();
   const [isHovered, setIsHovered] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const generateJobId = (job: Job): string => {
     return `${job.employer_name}-${job.job_title}-${job.job_location}`
-      .replace(/\s+/g, "-")
+      .replace(/\s+/g, '-')
       .toLowerCase();
   };
 
   const jobId = generateJobId(job);
   const isJobFavorite = isFavorite(job);
 
-  const handleToggleFavorite = () => {
-    if (isJobFavorite) {
-      removeFromFavorites(jobId);
-    } else {
-      addToFavorites(job);
+  const handleToggleFavorite = async () => {
+    setIsLoading(true);
+    try {
+      if (isJobFavorite) {
+        await removeFromFavorites(jobId);
+      } else {
+        await addToFavorites(job);
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -48,20 +56,21 @@ const FavoriteButton = ({ job }: FavoriteButtonProps) => {
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             className="h-8 w-8 p-0 hover:bg-red-50 hover:text-red-600"
+            disabled={isLoading}
           >
             <Heart
               className={`h-4 w-4 transition-all duration-200 ${
                 isJobFavorite
-                  ? "fill-red-500 text-red-500"
+                  ? 'fill-red-500 text-red-500'
                   : isHovered
-                    ? "fill-red-200 text-red-500"
-                    : "text-gray-400"
+                    ? 'fill-red-200 text-red-500'
+                    : 'text-gray-400'
               }`}
             />
           </Button>
         </TooltipTrigger>
         <TooltipContent>
-          <p>{isJobFavorite ? "Remove from favorites" : "Add to favorites"}</p>
+          <p>{isJobFavorite ? 'Remove from favorites' : 'Add to favorites'}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
