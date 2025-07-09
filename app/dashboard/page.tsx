@@ -18,15 +18,24 @@ export default async function Page() {
     throw new Error('User not found');
   }
 
-  const userProfile = await db.user.findUnique({
+  const userProfileRaw = await db.user.findUnique({
     where: {
       email: session?.user.email ?? undefined,
     },
   });
 
-  if (!userProfile) {
+  if (!userProfileRaw) {
     throw new Error('User not found');
   }
+
+  // Ensure name is always a string
+  const userProfile = {
+    ...userProfileRaw,
+    name: userProfileRaw.name ?? '',
+    email: userProfileRaw.email ?? '',
+    image: userProfileRaw.image ?? '',
+  };
+
   return (
     <SidebarProvider
       style={

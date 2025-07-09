@@ -10,7 +10,7 @@ const SignIn = () => {
         await signIn('google');
       }}
     >
-      <Button type="submit">
+      <Button type="submit" className="w-full">
         <FcGoogle className="mr-2 h-5 w-5" />
         Signin with Google
       </Button>

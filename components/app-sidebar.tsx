@@ -172,7 +172,22 @@ const data = {
   // ],
 };
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+interface UserProfile {
+  name: string;
+  email: string;
+  image: string;
+}
+
+export function AppSidebar({
+  userProfile,
+  ...props
+}: { userProfile: UserProfile } & React.ComponentProps<typeof Sidebar>) {
+  const user = {
+    name: userProfile.name,
+    email: userProfile.email,
+    avatar: userProfile.image,
+  };
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -203,7 +218,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         {/* <NavSecondary items={data.navSecondary} className="mt-auto" /> */}
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={user} />
       </SidebarFooter>
     </Sidebar>
   );

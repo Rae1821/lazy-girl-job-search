@@ -1,6 +1,9 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import SignIn from '@/components/SignIn';
+import React from 'react';
+import { signIn } from '@/auth';
+import { FcGoogle } from 'react-icons/fc';
 
 interface Login1Props {
   heading?: string;
@@ -59,7 +62,18 @@ const Login1 = ({
                 <Button type="submit" className="mt-2 w-full">
                   {buttonText}
                 </Button>
-                <SignIn />
+                {/* <SignIn /> */}
+                <form
+                  action={async () => {
+                    'use server';
+                    await signIn('google');
+                  }}
+                >
+                  <Button type="submit" className="w-full">
+                    <FcGoogle className="mr-2 h-5 w-5" />
+                    Signin with Google
+                  </Button>
+                </form>
               </div>
             </div>
           </div>
@@ -78,4 +92,4 @@ const Login1 = ({
   );
 };
 
-export { Login1 };
+export default Login1;

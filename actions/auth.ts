@@ -6,9 +6,11 @@ import {
   createPartFromUri,
   Modality,
 } from '@google/genai';
-import { auth } from '@/auth';
+import { auth, signOut } from '@/auth';
 import db from '@/db';
 import { Job } from '@/app/job-search/columns';
+import { redirect } from 'next/dist/server/api-utils';
+import { revalidatePath } from 'next/cache';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
@@ -41,28 +43,18 @@ interface UserInput {
   jobDescription: string;
 }
 
-// export async function compareResume(userInput: UserInput) {
-//   try {
-//     const response = await fetch('/api/compare-resume', {
-//       method: 'POST',
-//       headers: {
-//         'Content-Type': 'application/json',
-//       },
-//       body: JSON.stringify(userInput),
-//     });
-
-//     if (!response.ok) {
-//       throw new Error('Failed to analyze resume');
-//     }
-
-//     const result = await response.json();
-//     console.log(result);
-//     return result;
-//   } catch (error) {
-//     console.error('Error comparing resume:', error);
-//     throw error;
-//   }
-// }
+// Signout
+export const logOut = async () => {
+  try {
+    const signout = await signOut();
+    console.log(signout);
+    revalidatePath('/login'); // Redirect to login page after sign out
+    return { success: true };
+  } catch (error) {
+    console.error('Error signing out:', error);
+    return { success: false, error: 'Failed to sign out' };
+  }
+};
 
 export const generateComparison = async (userInput: UserInput) => {
   const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
@@ -94,6 +86,19 @@ export const generateComparison = async (userInput: UserInput) => {
     success: true,
     analysis: analysisText,
   };
+};
+
+// Find User
+export const getUserByEmail = async (email: string) => {
+  try {
+    const user = await db.user.findUnique({
+      where: { email },
+    });
+    return user;
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
 };
 
 // Favorites Server Actions
