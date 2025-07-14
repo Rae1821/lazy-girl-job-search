@@ -18,22 +18,10 @@ export default async function Page() {
     throw new Error('User not found');
   }
 
-  const userProfileRaw = await db.user.findUnique({
-    where: {
-      email: session?.user.email ?? undefined,
-    },
-  });
-
-  if (!userProfileRaw) {
-    throw new Error('User not found');
-  }
-
-  // Ensure name is always a string
-  const userProfile = {
-    ...userProfileRaw,
-    name: userProfileRaw.name ?? '',
-    email: userProfileRaw.email ?? '',
-    image: userProfileRaw.image ?? '',
+  const user = {
+    email: session.user.email,
+    name: session.user.name || '',
+    image: session.user.image || '',
   };
 
   return (
@@ -45,13 +33,13 @@ export default async function Page() {
         } as React.CSSProperties
       }
     >
-      <AppSidebar variant="inset" userProfile={userProfile} />
+      <AppSidebar variant="inset" user={user} />
       <SidebarInset>
         <SiteHeader />
         <div className="flex flex-1 flex-col">
           <div className="@container/main flex flex-1 flex-col gap-2">
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-              <SectionCards />
+              {/* <SectionCards /> */}
               <AppliedJobsStats />
               <div className="px-4 lg:px-6">
                 <ChartAreaInteractive />

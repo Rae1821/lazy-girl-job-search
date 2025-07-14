@@ -175,19 +175,13 @@ const data = {
 interface UserProfile {
   name: string;
   email: string;
-  image: string;
+  image?: string;
 }
 
 export function AppSidebar({
-  userProfile,
+  user,
   ...props
-}: { userProfile: UserProfile } & React.ComponentProps<typeof Sidebar>) {
-  const user = {
-    name: userProfile.name,
-    email: userProfile.email,
-    avatar: userProfile.image,
-  };
-
+}: { user: UserProfile } & React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -195,7 +189,7 @@ export function AppSidebar({
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
-              className="data-[slot=sidebar-menu-button]:!p-1.5"
+              className="data-[slot=sidebar-menu-button]:!p-1.5 "
             >
               <a href="#">
                 <IconInnerShadowTop className="!size-5" />

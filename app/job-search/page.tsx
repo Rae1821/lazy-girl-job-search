@@ -6,6 +6,7 @@ import JobTable from './data-table';
 import columns from './columns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Suspense } from 'react';
+import { auth } from '@/auth';
 
 const JobsPage = async (props: {
   searchParams: Promise<{ query: string }>;
@@ -13,6 +14,17 @@ const JobsPage = async (props: {
   const searchParams = await props.searchParams;
   const query = searchParams?.query;
 
+  const session = await auth();
+
+  if (!session?.user?.email) {
+    throw new Error('User not found');
+  }
+
+  const user = {
+    email: session.user.email,
+    name: session.user.name || '',
+    image: session.user.image || '',
+  };
   return (
     <SidebarProvider
       style={
@@ -22,7 +34,7 @@ const JobsPage = async (props: {
         } as React.CSSProperties
       }
     >
-      <AppSidebar variant="inset" />
+      <AppSidebar variant="inset" user={user} />
       <SidebarInset>
         <SiteHeader />
         <div className="flex flex-1 flex-col">

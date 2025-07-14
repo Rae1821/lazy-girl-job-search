@@ -98,8 +98,8 @@ const ApplyButton = ({
             size={size}
             onClick={handleApply}
             disabled={isLoading}
-            className={`${className} hover:bg-blue-50 hover:text-blue-600 transition-all ${
-              isClicked ? 'bg-green-50 text-green-600 border-green-200' : ''
+            className={`${className} hover:bg-blue-50 hover:text-teal-400 transition-all ${
+              isClicked ? 'bg-green-50 text-teal-400 border-teal-400' : ''
             }`}
           >
             <ExternalLink className="h-3 w-3 mr-1" />

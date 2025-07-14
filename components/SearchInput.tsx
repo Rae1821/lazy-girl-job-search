@@ -25,7 +25,7 @@ const SearchInput = () => {
   };
 
   return (
-    <form onSubmit={handleSearch}>
+    <form onSubmit={handleSearch} className="px-4">
       <div className="flex flex-row gap-2 items-center mt-4 w-full">
         <Input
           type="text"
@@ -36,7 +36,12 @@ const SearchInput = () => {
             setSearchTerm(e.target.value);
           }}
         />
-        <Button type="submit">Search</Button>
+        <Button
+          type="submit"
+          className="bg-teal-400 text-accent-foreground dark:text-primary-foreground hover:text-primary-foreground"
+        >
+          Search
+        </Button>
       </div>
     </form>
   );

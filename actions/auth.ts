@@ -68,12 +68,75 @@ export const generateComparison = async (userInput: UserInput) => {
       Resume: ${userInput.resume}
       
       Job Description: ${userInput.jobDescription}
-      
-      Please provide your analysis in the following format:
-      - Score: [0-100]
-      - Strengths: [List of matching qualifications and skills]
-      - Weaknesses: [List of missing qualifications and skills]
-      - Recommendations: [Suggestions for improvement]`;
+
+      Please return an analysis object following this schema:
+
+      Analysis = {'score': [0-100], 'strengths': [list of matching qualifications and skills], 'weaknesses': [list of missing qualifications and skills], 'recommendations': [suggestions for improvement]}
+
+      Example of expected JSON output: 
+
+      {
+        "score": 85,
+        "strengths": [
+          {
+            "title": "React Experience",
+            "description": "The resume highlights significant experience with React.js and Next.js, which are closely related to the required React 18+.  While the specific version isn't stated, the experience level suggests proficiency."
+          },
+          {
+            "title": "UI Framework Experience",
+            "description": "The candidate demonstrates experience with TailwindCSS, a required skill."
+          },
+          {
+            "title": "API Integration",
+            "description": "The resume shows experience integrating RESTful APIs, though the specific tools (Axios or Fetch) aren't explicitly mentioned."
+          },
+          {
+            "title": "TypeScript Familiarity",
+            "description": "Although not explicitly stated as a core skill, use of TypeScript in several projects suggests some familiarity, aligning with the job description's preference."
+          },
+          {
+            "title": "Responsive UI Development",
+            "description": "Multiple projects showcase building responsive websites, a key requirement of the job."
+          },
+          {
+            "title": "Version Control",
+            "description": "Consistent use of Git and GitHub demonstrates proficiency in version control."
+          },
+          {
+            "title": "Collaboration",
+            "description": "The resume emphasizes collaboration skills, a crucial aspect of the role."
+          }
+        ],
+        "weaknesses": [
+          {
+            "title": "React 18+ and Specific Version",
+            "description": "The resume doesn't specify experience with React 18+, only general React experience. The job description emphasizes 3+ years specifically with React 18+ and its features (hooks, context, performance optimization). This needs clarification."
+          },
+          {
+            "title": "OAuth (Auth0) Experience",
+            "description": "The resume lacks explicit mention of experience with OAuth or Auth0, a critical requirement."
+          },
+          {
+            "title": "Azure Static Web Apps (or similar)",
+            "description": "No experience with Azure Static Web Apps or comparable deployment platforms is mentioned."
+          }
+        ],
+
+        "recommendations": [
+          {
+            "title": "Quantify React 18+ Experience",
+            "description": "Clearly state the extent of experience with React 18+, including specific examples of using hooks, context, and performance optimization techniques."
+          },
+          {
+            "title": "Highlight OAuth/Auth0 Skills (if any)",
+            "description": "If Rachel has any experience with OAuth or Auth0, even in personal projects, this should be prominently featured. If not, consider acquiring this skill."
+          },
+          {
+            "title": "Mention Deployment Platforms",
+            "description": "Update the resume to include experience with deployment platforms similar to Azure Static Web Apps, if available."
+          }
+        ]
+      }`;
 
   const response = await ai.models.generateContent({
     model: 'gemini-1.5-flash',
@@ -81,12 +144,36 @@ export const generateComparison = async (userInput: UserInput) => {
   });
 
   const analysisText = response.text;
-  console.log(analysisText);
+  const analysisResult = parseGeminiResponse(analysisText);
   return {
     success: true,
-    analysis: analysisText,
+    analysis: analysisResult,
   };
 };
+
+interface AnalysisResult {
+  score: number;
+  strengths: { title: string; description: string }[] | null;
+  weaknesses: { title: string; description: string }[] | null;
+  recommendations: { title: string; description: string }[] | null;
+}
+
+function parseGeminiResponse(
+  responseText: string | undefined
+): AnalysisResult | null {
+  if (!responseText) return null;
+
+  try {
+    const jsonMatch = responseText.match(/```json\s*([\s\S]*?)\s*```/);
+    if (jsonMatch && jsonMatch[1]) {
+      return JSON.parse(jsonMatch[1]);
+    }
+    return JSON.parse(responseText);
+  } catch (error) {
+    console.error('Error parsing Gemini response:', error);
+  }
+  return null;
+}
 
 // Find User
 export const getUserByEmail = async (email: string) => {

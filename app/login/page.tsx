@@ -28,27 +28,17 @@ const Login1 = ({
     title: 'shadcnblocks.com',
   },
   buttonText = 'Login',
-  googleText = 'Sign up with Google',
   signupText = "Don't have an account?",
   signupUrl = 'https://shadcnblocks.com',
 }: Login1Props) => {
   return (
-    <section className="bg-muted bg-background h-screen">
+    <section className="bg-muted h-screen">
       <div className="flex h-full items-center justify-center">
         <div className="border-muted bg-background flex w-full max-w-sm flex-col items-center gap-y-8 rounded-md border px-6 py-12 shadow-md">
           <div className="flex flex-col items-center gap-y-2">
             {/* Logo */}
-            <div className="flex items-center gap-1 lg:justify-start">
-              <a href={logo.url}>
-                <img
-                  src={logo.src}
-                  alt={logo.alt}
-                  title={logo.title}
-                  className="h-10 dark:invert"
-                />
-              </a>
-            </div>
-            {heading && <h1 className="text-3xl font-semibold">{heading}</h1>}
+            <div className="flex items-center gap-1 lg:justify-start"></div>
+            <h1 className="text-2xl font-bold">Lazy Girl Job Tracker</h1>
           </div>
           <div className="flex w-full flex-col gap-8">
             <div className="flex flex-col gap-4">

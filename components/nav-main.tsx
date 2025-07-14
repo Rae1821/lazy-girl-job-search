@@ -1,6 +1,13 @@
 'use client';
 
-import { IconCirclePlusFilled, IconMail, type Icon } from '@tabler/icons-react';
+import {
+  IconCirclePlusFilled,
+  IconDeviceTabletSearch,
+  IconMail,
+  type Icon,
+} from '@tabler/icons-react';
+
+import { TbSearch } from 'react-icons/tb';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -28,11 +35,12 @@ export function NavMain({
           <SidebarMenuItem className="flex items-center gap-2">
             <SidebarMenuButton
               tooltip="Quick Create"
-              className="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear"
+              className="bg-teal-400 dark:text-primary-foreground text-accent-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear"
               asChild
             >
               <Link href="/job-search">
-                <IconCirclePlusFilled />
+                {/* <IconCirclePlusFilled /> */}
+                <TbSearch className="h-4 w-4" />
                 <span>Job Search</span>
               </Link>
             </SidebarMenuButton>

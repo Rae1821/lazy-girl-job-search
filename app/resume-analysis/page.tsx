@@ -1,9 +1,22 @@
+import { auth } from '@/auth';
 import ResumeAnalysis from '@/components/ResumeAnalysis';
 import { AppSidebar } from '@/components/app-sidebar';
 import { SiteHeader } from '@/components/site-header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 
-const ResumeAnalysisPage = () => {
+const ResumeAnalysisPage = async () => {
+  const session = await auth();
+
+  if (!session?.user?.email) {
+    throw new Error('User not found');
+  }
+
+  const user = {
+    email: session.user.email,
+    name: session.user.name || '',
+    image: session.user.image || '',
+  };
+
   return (
     <SidebarProvider
       style={
@@ -13,7 +26,7 @@ const ResumeAnalysisPage = () => {
         } as React.CSSProperties
       }
     >
-      <AppSidebar variant="inset" />
+      <AppSidebar variant="inset" user={user} />
       <SidebarInset>
         <SiteHeader />
         <div className="flex flex-1 flex-col">

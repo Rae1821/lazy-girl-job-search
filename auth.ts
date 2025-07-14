@@ -3,14 +3,6 @@ import { authConfig } from '@/auth.config';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import db from '@/db';
 
-// // Validate required environment variables
-// const requiredEnvVars = {
-//   NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
-//   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
-//   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
-//   DATABASE_URL: process.env.DATABASE_URL,
-// };
-
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
   adapter: PrismaAdapter(db),
