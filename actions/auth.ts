@@ -11,6 +11,9 @@ import db from '@/db';
 import { Job } from '@/app/job-search/columns';
 import { redirect } from 'next/dist/server/api-utils';
 import { revalidatePath } from 'next/cache';
+import path from 'path';
+import fs from 'fs';
+import os from 'os';
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
@@ -55,6 +58,99 @@ export const logOut = async () => {
     return { success: false, error: 'Failed to sign out' };
   }
 };
+
+// Update User
+interface AddUploadedResumeInput {
+  id?: string;
+  email?: string;
+  resume_url?: string;
+  resume_name?: string;
+}
+
+// export const updateUser = async (input: AddUploadedResumeInput) => {
+//   try {
+//     if (!input.resume_url) {
+//       throw new Error('File URL is required');
+//     }
+
+//     const session = await auth();
+//     if (!session?.user?.id) {
+//       throw new Error('User not authenticated');
+//     }
+
+//     const updatedUser = await db.user.update({
+//       where: { id: session.user.id },
+//       data: {
+//         user: { connect: { email: session.user.email } },
+//         resume_url: input.resume_url,
+//         resume_name: input.resume_name,
+//       },
+//     });
+//     return updatedUser;
+//   } catch (error) {
+//     console.error('Error updating user:', error);
+//     return { success: false, error: 'Failed to update user' };
+//   }
+// };
+
+// Upload Thing - upload resume
+
+export const addUploadedResume = async (input: AddUploadedResumeInput) => {
+  try {
+    const addResume = await db.resume.create({
+      data: {
+        user: { connect: { id: input.id } },
+        resume_url: input.resume_url ?? '',
+        resume_name: input.resume_name ?? '',
+      },
+    });
+    return addResume;
+  } catch (error) {
+    console.error('Error adding uploaded resume:', error);
+    return { success: false, error: 'Failed to add uploaded resume' };
+  }
+};
+
+interface UploadedFile {
+  uri?: string;
+  mimeType: string;
+}
+
+const downloadFile = async (url: string): Promise<string> => {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`Failed to download file: ${response.statusText}`);
+  }
+  const buffer = Buffer.from(await response.arrayBuffer());
+  const tempFilePath = path.join(os.tmpdir(), path.basename(url));
+  await fs.promises.writeFile(tempFilePath, buffer);
+  return tempFilePath;
+};
+
+// export const updateUser = async (input: AddUploadedResumeInput) => {
+//   try {
+//     if (!input.resume_url) {
+//       throw new Error('Resume URL is required');
+//     }
+
+//     const session = await auth();
+//     // const email = session?.user?.email;
+//     if (!session?.user?.id) {
+//       throw new Error('User not authenticated');
+//     }
+
+//     const updateUser = await db.user.update({
+//       where: { id: session.user.id },
+//       data: {
+//         resume_url: input.resume_url,
+//       },
+//     });
+//     return updateUser;
+//   } catch (error) {
+//     console.error('Error updating user:', error);
+//     return { success: false, error: 'Failed to update user' };
+//   }
+// };
 
 export const generateComparison = async (userInput: UserInput) => {
   const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });

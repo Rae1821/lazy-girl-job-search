@@ -29,7 +29,8 @@ model User {
   // Optional for WebAuthn support
   Authenticator Authenticator[]
   jobs          Job[]
- 
+  resumes       Resume[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -59,6 +60,14 @@ model Job {
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
     
+}
+
+model Resume {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String   @db.ObjectId
+  resume_url     String?
+  resume_name    String?
 }
 
  

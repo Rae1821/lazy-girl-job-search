@@ -15,6 +15,9 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Badge } from './ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { CheckCircle, AlertCircle, Lightbulb } from 'lucide-react';
+import ResumeUpload from './ResumeUpload';
 
 interface AnalysisResult {
   score: number;
@@ -22,12 +25,6 @@ interface AnalysisResult {
   weaknesses: { title: string; description?: string }[] | null;
   recommendations: { title: string; description?: string }[] | null;
 }
-
-// If you want to display more details (like a title, description, etc.) for each strength, weakness, or recommendation,
-// you should change the types from string[] to an array of objects, e.g.,
-// strengths: { title: string; description?: string }[] | null;
-// Then update the rendering code accordingly.
-// Otherwise, if you only need plain strings, string[] is sufficient.
 
 const ResumeAnalysis = () => {
   const [resume, setResume] = useState('');
@@ -83,7 +80,7 @@ const ResumeAnalysis = () => {
           <div className="mt-12 w-full">
             <form onSubmit={handleCompare}>
               <div className="flex flex-col md:flex-row gap-8">
-                <div className="">
+                {/* <div className="">
                   <Label
                     htmlFor="resume-upload"
                     className="block mb-2 font-semibold"
@@ -97,7 +94,8 @@ const ResumeAnalysis = () => {
                     value={resume}
                     onChange={(e) => setResume(e.target.value)}
                   />
-                </div>
+                </div> */}
+                <ResumeUpload />
                 <div>
                   <Label
                     htmlFor="job-description"
@@ -115,7 +113,10 @@ const ResumeAnalysis = () => {
                 </div>
               </div>
               <div className="mt-8">
-                <Button type="submit" className="cursor-pointer">
+                <Button
+                  type="submit"
+                  className="cursor-pointer bg-teal-400 text-accent-foreground dark:text-primary-foreground hover:text-primary-foreground"
+                >
                   Compare Resume & Job Description
                 </Button>
               </div>
@@ -124,99 +125,154 @@ const ResumeAnalysis = () => {
         </div>
         <div className="mt-12">
           <div>
-            <h2 className="text-2xl font-bold">Comparison Result</h2>
+            <h2 className="text-2xl font-bold mb-4">Analysis Results</h2>
             {comparisonResult ? (
-              <div className="space-y-4 mt-4">
-                <div>
-                  <span className="font-semibold">Score:</span>{' '}
-                  {comparisonResult.score}
+              <div className="space-y-6">
+                <div className="text-center">
+                  <span className="text-lg font-semibold">Match Score: </span>
+                  <span className="text-3xl font-bold text-teal-400">
+                    {comparisonResult.score}%
+                  </span>
                 </div>
 
-                <Card className="@container/card">
-                  <CardHeader>
-                    <CardDescription>
-                      Things you are doing right
-                    </CardDescription>
-                    <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+                <Tabs defaultValue="strengths" className="w-full">
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger
+                      value="strengths"
+                      className="flex items-center gap-2"
+                    >
+                      <CheckCircle className="w-4 h-4" />
                       Strengths
-                    </CardTitle>
-                  </CardHeader>
-                  <CardFooter className="flex-col items-start gap-1.5 text-sm">
-                    <ul className="leading-loose">
-                      {comparisonResult.strengths &&
-                      comparisonResult.strengths.length > 0 ? (
-                        comparisonResult.strengths.map((item, idx) => (
-                          <li key={idx}>
-                            <Badge variant="outline" className="text-teal-400">
-                              {item.title}
-                            </Badge>
-                            <span className="text-sm ml-2 mb-2">
-                              {item.description}
-                            </span>
-                          </li>
-                        ))
-                      ) : (
-                        <li>None</li>
-                      )}
-                    </ul>
-                  </CardFooter>
-                </Card>
-                <Card className="@container/card">
-                  <CardHeader>
-                    <CardDescription>Areas for improvement</CardDescription>
-                    <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-                      Weaknesses
-                    </CardTitle>
-                  </CardHeader>
-                  <CardFooter className="flex-col items-start gap-1.5 text-sm">
-                    <ul className="leading-loose">
-                      {comparisonResult.weaknesses &&
-                      comparisonResult.weaknesses.length > 0 ? (
-                        comparisonResult.weaknesses.map((item, idx) => (
-                          <li key={idx}>
-                            <Badge variant="outline" className="text-red-400">
-                              {item.title}
-                            </Badge>
-                            <span className="text-sm ml-2 mb-2">
-                              {item.description}
-                            </span>
-                          </li>
-                        ))
-                      ) : (
-                        <li>None</li>
-                      )}
-                    </ul>
-                  </CardFooter>
-                </Card>
-                <Card className="@container/card">
-                  <CardHeader>
-                    <CardDescription>
-                      What you can do to improve
-                    </CardDescription>
-                    <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="weaknesses"
+                      className="flex items-center gap-2"
+                    >
+                      <AlertCircle className="w-4 h-4" />
+                      Areas to Improve
+                    </TabsTrigger>
+                    <TabsTrigger
+                      value="recommendations"
+                      className="flex items-center gap-2"
+                    >
+                      <Lightbulb className="w-4 h-4" />
                       Recommendations
-                    </CardTitle>
-                  </CardHeader>
-                  <CardFooter className="flex-col items-start gap-1.5 text-sm">
-                    <ul className="leading-loose">
-                      {comparisonResult.recommendations &&
-                      comparisonResult.recommendations.length > 0 ? (
-                        comparisonResult.recommendations.map((item, idx) => (
-                          <li key={idx}>
-                            <Badge className="bg-teal-400 dark:text-primary-foreground">
-                              {item.title}
-                            </Badge>
-                            <span className="text-sm ml-2 mb-2">
-                              {item.description}
-                            </span>
-                          </li>
-                        ))
-                      ) : (
-                        <li>None</li>
-                      )}
-                    </ul>
-                  </CardFooter>
-                </Card>
+                    </TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="strengths" className="space-y-4">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-xl text-teal-600 dark:text-teal-400 flex items-center gap-2">
+                          <CheckCircle className="w-5 h-5" />
+                          What You're Doing Right
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {comparisonResult.strengths &&
+                        comparisonResult.strengths.length > 0 ? (
+                          <div className="space-y-3">
+                            {comparisonResult.strengths.map((item, idx) => (
+                              <div
+                                key={idx}
+                                className="border-l-4 border-teal-500 pl-4 py-2"
+                              >
+                                <h4 className="font-semibold text-teal-600 dark:text-teal-300">
+                                  {item.title}
+                                </h4>
+                                {item.description && (
+                                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                                    {item.description}
+                                  </p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-gray-500">
+                            No strengths identified.
+                          </p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+
+                  <TabsContent value="weaknesses" className="space-y-4">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-xl text-orange-600 dark:text-orange-400 flex items-center gap-2">
+                          <AlertCircle className="w-5 h-5" />
+                          Areas for Improvement
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {comparisonResult.weaknesses &&
+                        comparisonResult.weaknesses.length > 0 ? (
+                          <div className="space-y-3">
+                            {comparisonResult.weaknesses.map((item, idx) => (
+                              <div
+                                key={idx}
+                                className="border-l-4 border-orange-500 pl-4 py-2"
+                              >
+                                <h4 className="font-semibold text-orange-700 dark:text-orange-300">
+                                  {item.title}
+                                </h4>
+                                {item.description && (
+                                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                                    {item.description}
+                                  </p>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-gray-500">
+                            No weaknesses identified.
+                          </p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+
+                  <TabsContent value="recommendations" className="space-y-4">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-xl text-blue-600 dark:text-blue-400 flex items-center gap-2">
+                          <Lightbulb className="w-5 h-5" />
+                          Actionable Recommendations
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {comparisonResult.recommendations &&
+                        comparisonResult.recommendations.length > 0 ? (
+                          <div className="space-y-3">
+                            {comparisonResult.recommendations.map(
+                              (item, idx) => (
+                                <div
+                                  key={idx}
+                                  className="border-l-4 border-blue-500 pl-4 py-2"
+                                >
+                                  <h4 className="font-semibold text-blue-700 dark:text-blue-300">
+                                    {item.title}
+                                  </h4>
+                                  {item.description && (
+                                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                                      {item.description}
+                                    </p>
+                                  )}
+                                </div>
+                              )
+                            )}
+                          </div>
+                        ) : (
+                          <p className="text-gray-500">
+                            No recommendations available.
+                          </p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </TabsContent>
+                </Tabs>
               </div>
             ) : (
               <p>No comparison result yet.</p>

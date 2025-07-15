@@ -1,4 +1,5 @@
-import { addUploadedImages } from '@/actions/auth';
+// import { addUploadedImages } from '@/actions/auth';
+import { addUploadedResume } from '@/actions/auth';
 import { auth } from '@/auth';
 // import { cookies } from "next/headers";
 import { createUploadthing, type FileRouter } from 'uploadthing/next';
@@ -24,8 +25,6 @@ export const ourFileRouter = {
     // Set permissions and file types for this FileRoute
     .middleware(async ({}) => {
       // This code runs on your server before upload
-      // const userCookies = await cookies();
-      // const user = userCookies.get("user");
 
       const session = await auth();
       const user = session?.user;
@@ -35,28 +34,25 @@ export const ourFileRouter = {
       // If you throw, the user will not be able to upload
       if (!user) throw new UploadThingError('Unauthorized');
 
-      // const userData = user ? JSON.parse(user.value) : null;
-      // const userEmail = userData?.email;
-      // const userId = userData?.id;
-
       // Whatever is returned here is accessible in onUploadComplete as `metadata`
       return { userEmail: userEmail, userId: userId };
     })
     .onUploadComplete(async ({ metadata, file }) => {
       // This code RUNS ON YOUR SERVER after upload
-      const newImage = await addUploadedImages({
+      const newResume = await addUploadedResume({
         id: metadata.userId ?? '',
         email: metadata.userEmail ?? '',
-        image_url: file.ufsUrl ?? '',
-        image_name: file.name ?? '',
+        resume_url: file.ufsUrl ?? '',
+        resume_name: file.name ?? '',
       });
-      console.log(newImage);
+
+      console.log(newResume);
       console.log('Upload complete for userId:', metadata.userId);
 
       console.log('file url', file.ufsUrl);
 
       // !!! Whatever is returned here is sent to the clientside `onClientUploadComplete` callback
-      return { newImage, uploadedBy: metadata.userEmail };
+      return { newResume, uploadedBy: metadata.userEmail };
     }),
 } satisfies FileRouter;
 
