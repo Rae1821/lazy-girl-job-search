@@ -28,6 +28,7 @@ import { signOut } from '@/auth';
 import { Button } from './ui/button';
 import SignOut from './SignOut';
 import { logOut } from '@/actions/auth';
+import Link from 'next/link';
 
 export function NavUser({
   user,
@@ -84,9 +85,11 @@ export function NavUser({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <IconUserCircle />
-                Account
+              <DropdownMenuItem asChild>
+                <Link href="/account">
+                  <IconUserCircle />
+                  Saved Resumes
+                </Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <IconCreditCard />

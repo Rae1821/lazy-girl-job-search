@@ -692,3 +692,69 @@ export async function clearApplied() {
     throw error;
   }
 }
+
+export const findUniqueResumes = async () => {
+  try {
+    const session = await auth();
+    const email = session?.user?.email ?? '';
+
+    if (!session?.user?.id) {
+      throw new Error('User not authenticated');
+    }
+
+    const currentUser = await db.user.findUnique({
+      where: { email },
+      include: { resumes: true },
+    });
+
+    return currentUser?.resumes;
+  } catch (error) {
+    console.error('Error finding resume by ID:', error);
+    throw error;
+  }
+};
+
+interface UpdateResumeNameInput {
+  resume_id: string;
+  resume_name: string;
+}
+
+export const updateResumeName = async (input: UpdateResumeNameInput) => {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      throw new Error('User not authenticated');
+    }
+    if (!input.resume_name) {
+      throw new Error('Resume name is required');
+    }
+    if (!input.resume_id) {
+      throw new Error('Resume ID is required');
+    }
+
+    // First verify that the resume belongs to the authenticated user
+    const resume = await db.resume.findUnique({
+      where: { id: input.resume_id },
+    });
+
+    if (!resume) {
+      throw new Error('Resume not found');
+    }
+
+    if (resume.userId !== session.user.id) {
+      throw new Error('You do not have permission to update this resume');
+    }
+
+    const updatedResumeName = await db.resume.update({
+      where: { id: input.resume_id },
+      data: {
+        resume_name: input.resume_name,
+      },
+    });
+
+    return updatedResumeName;
+  } catch (error) {
+    console.error('Error updating user:', error);
+    throw error;
+  }
+};

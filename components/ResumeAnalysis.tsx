@@ -16,8 +16,9 @@ import {
 } from '@/components/ui/card';
 import { Badge } from './ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { CheckCircle, AlertCircle, Lightbulb } from 'lucide-react';
-import ResumeUpload from './ResumeUpload';
+import { CheckCircle, AlertCircle, Lightbulb, FileText } from 'lucide-react';
+import ResumeSelector from './ResumeSelector';
+import { extractTextFromPDF, createResumeTextPrompt } from '@/lib/pdfUtils';
 
 interface AnalysisResult {
   score: number;
@@ -31,13 +32,62 @@ const ResumeAnalysis = () => {
   const [jobDescription, setJobDescription] = useState('');
   const [comparisonResult, setComparisonResult] =
     useState<AnalysisResult | null>(null);
+  const [selectedResumeUrl, setSelectedResumeUrl] = useState<string>('');
+  const [selectedResumeName, setSelectedResumeName] = useState<string>('');
+  const [resumeTextExtracted, setResumeTextExtracted] =
+    useState<boolean>(false);
+
+  const handleResumeSelected = async (
+    resumeUrl: string,
+    resumeName?: string
+  ) => {
+    setSelectedResumeUrl(resumeUrl);
+    setSelectedResumeName(resumeName || 'Selected Resume');
+
+    try {
+      // Attempt to extract text from PDF
+      const extractedText = await extractTextFromPDF(resumeUrl);
+      setResume(extractedText);
+      setResumeTextExtracted(true);
+    } catch (error) {
+      console.error('Error extracting text:', error);
+      // If extraction fails, show a prompt for manual input
+      setResume('');
+      setResumeTextExtracted(false);
+    }
+  };
+
+  const handleNewResumeUpload = async (
+    resumeUrl: string,
+    resumeName?: string
+  ) => {
+    setSelectedResumeUrl(resumeUrl);
+    setSelectedResumeName(resumeName || 'Uploaded Resume');
+
+    try {
+      // Attempt to extract text from PDF
+      const extractedText = await extractTextFromPDF(resumeUrl);
+      setResume(extractedText);
+      setResumeTextExtracted(true);
+    } catch (error) {
+      console.error('Error extracting text:', error);
+      // If extraction fails, show a prompt for manual input
+      setResume('');
+      setResumeTextExtracted(false);
+    }
+  };
 
   const handleCompare = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!resume || !jobDescription) {
-      alert('Please fill in both fields.');
+    if (!resume.trim() || !jobDescription.trim()) {
+      alert('Please provide both resume content and job description.');
       return;
     }
+    if (!selectedResumeUrl) {
+      alert('Please select or upload a resume first.');
+      return;
+    }
+
     const userInput = { resume, jobDescription };
 
     try {
@@ -80,23 +130,47 @@ const ResumeAnalysis = () => {
           <div className="mt-12 w-full">
             <form onSubmit={handleCompare}>
               <div className="flex flex-col md:flex-row gap-8">
-                {/* <div className="">
-                  <Label
-                    htmlFor="resume-upload"
-                    className="block mb-2 font-semibold"
-                  >
-                    Paste Resume
-                  </Label>
-                  <Textarea
-                    placeholder="Paste your resume here..."
-                    id="resume"
-                    className="h-96 w-md"
-                    value={resume}
-                    onChange={(e) => setResume(e.target.value)}
+                <div className="flex-1">
+                  <p className="text-sm font-semibold pb-4">
+                    Choose Your Resume
+                  </p>
+                  <ResumeSelector
+                    onResumeSelected={handleResumeSelected}
+                    onNewResumeUploaded={handleNewResumeUpload}
                   />
-                </div> */}
-                <ResumeUpload />
-                <div>
+
+                  {selectedResumeUrl && (
+                    <div className="mt-4">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2">
+                            <FileText className="w-4 h-4" />
+                            Resume Content
+                          </CardTitle>
+                          <CardDescription>
+                            {resumeTextExtracted
+                              ? `Text extracted from: ${selectedResumeName}`
+                              : createResumeTextPrompt(selectedResumeName)}
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <Textarea
+                            placeholder={
+                              resumeTextExtracted
+                                ? 'Resume text extracted automatically...'
+                                : 'Please paste your resume content here for analysis...'
+                            }
+                            value={resume}
+                            onChange={(e) => setResume(e.target.value)}
+                            className="h-32 w-full"
+                          />
+                        </CardContent>
+                      </Card>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex-1">
                   <Label
                     htmlFor="job-description"
                     className="block mb-2 font-semibold"
@@ -106,7 +180,7 @@ const ResumeAnalysis = () => {
                   <Textarea
                     placeholder="Paste a job description here..."
                     id="job-description"
-                    className="h-96 w-md"
+                    className="h-96 w-full"
                     value={jobDescription}
                     onChange={(e) => setJobDescription(e.target.value)}
                   />

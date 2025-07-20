@@ -5,32 +5,7 @@ import React from 'react';
 import { signIn } from '@/auth';
 import { FcGoogle } from 'react-icons/fc';
 
-interface Login1Props {
-  heading?: string;
-  logo: {
-    url: string;
-    src: string;
-    alt: string;
-    title?: string;
-  };
-  buttonText?: string;
-  googleText?: string;
-  signupText?: string;
-  signupUrl?: string;
-}
-
-const Login1 = ({
-  heading,
-  logo = {
-    url: 'https://www.shadcnblocks.com',
-    src: 'https://deifkwefumgah.cloudfront.net/shadcnblocks/block/logos/shadcnblockscom-wordmark.svg',
-    alt: 'logo',
-    title: 'shadcnblocks.com',
-  },
-  buttonText = 'Login',
-  signupText = "Don't have an account?",
-  signupUrl = 'https://shadcnblocks.com',
-}: Login1Props) => {
+const LoginPage = () => {
   return (
     <section className="bg-muted h-screen">
       <div className="flex h-full items-center justify-center">
@@ -50,7 +25,7 @@ const Login1 = ({
               </div>
               <div className="flex flex-col gap-4">
                 <Button type="submit" className="mt-2 w-full">
-                  {buttonText}
+                  Login
                 </Button>
                 {/* <SignIn /> */}
                 <form
@@ -68,11 +43,8 @@ const Login1 = ({
             </div>
           </div>
           <div className="text-muted-foreground flex justify-center gap-1 text-sm">
-            <p>{signupText}</p>
-            <a
-              href={signupUrl}
-              className="text-primary font-medium hover:underline"
-            >
+            <p>Don't have an account?</p>
+            <a href="#" className="text-primary font-medium hover:underline">
               Sign up
             </a>
           </div>
@@ -82,4 +54,4 @@ const Login1 = ({
   );
 };
 
-export default Login1;
+export default LoginPage;
