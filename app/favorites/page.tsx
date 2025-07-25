@@ -2,8 +2,20 @@ import { AppSidebar } from '@/components/app-sidebar';
 import { SiteHeader } from '@/components/site-header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import FavoriteJobs from '@/components/FavoriteJobs';
+import { auth } from '@/auth';
 
-const FavoritesPage = () => {
+const FavoritesPage = async () => {
+  const session = await auth();
+
+  if (!session?.user?.email) {
+    throw new Error('User not found');
+  }
+
+  const user = {
+    email: session.user.email,
+    name: session.user.name || '',
+    image: session.user.image || '',
+  };
   return (
     <SidebarProvider
       style={
@@ -13,7 +25,7 @@ const FavoritesPage = () => {
         } as React.CSSProperties
       }
     >
-      <AppSidebar variant="inset" />
+      <AppSidebar user={user} variant="inset" />
       <SidebarInset>
         <SiteHeader />
         <div className="flex flex-1 flex-col">

@@ -1,9 +1,21 @@
+import { auth } from '@/auth';
 import { AppSidebar } from '@/components/app-sidebar';
 import AppliedJobsList from '@/components/AppliedJobsList';
 import { SiteHeader } from '@/components/site-header';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 
-const AppliedPage = () => {
+const AppliedPage = async () => {
+  const session = await auth();
+
+  if (!session?.user?.email) {
+    throw new Error('User not found');
+  }
+
+  const user = {
+    email: session.user.email,
+    name: session.user.name || '',
+    image: session.user.image || '',
+  };
   return (
     <SidebarProvider
       style={
@@ -13,7 +25,7 @@ const AppliedPage = () => {
         } as React.CSSProperties
       }
     >
-      <AppSidebar variant="inset" />
+      <AppSidebar user={user} variant="inset" />
       <SidebarInset>
         <SiteHeader />
         <div className="flex flex-1 flex-col">

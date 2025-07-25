@@ -1,6 +1,5 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import SignIn from '@/components/SignIn';
 import React from 'react';
 import { signIn } from '@/auth';
 import { FcGoogle } from 'react-icons/fc';
