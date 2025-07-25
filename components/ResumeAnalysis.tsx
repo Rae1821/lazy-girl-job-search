@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { Button } from './ui/button';
-import { generateComparison } from '@/actions/auth';
+import { geminiResumeUpload, generateComparison } from '@/actions/auth';
 import {
   Card,
   CardAction,
@@ -27,8 +27,31 @@ interface AnalysisResult {
   recommendations: { title: string; description?: string }[] | null;
 }
 
+interface ParsedResume {
+  'languages and technologies': string[];
+  projects: { title: string; description: string }[];
+  skills: string[];
+  qualifications: string[];
+  experience: {
+    job_title: string;
+    company_name: string;
+    description: string;
+  }[];
+  education: { degree: string; institution: string; year: number }[];
+  certifications: { name: string; issuing_organization: string }[];
+  awards: { name: string; year: number }[];
+  'volunteer experience': {
+    organization_name: string;
+    role: string;
+    description: string;
+  }[];
+  publications: { title: string; publication_name: string; year: number }[];
+  summary: string;
+}
+
 const ResumeAnalysis = () => {
-  const [resume, setResume] = useState('');
+  const [resume, setResume] = useState<string>('');
+  const [parsedResume, setParsedResume] = useState<ParsedResume | null>(null);
   const [jobDescription, setJobDescription] = useState('');
   const [comparisonResult, setComparisonResult] =
     useState<AnalysisResult | null>(null);
@@ -36,24 +59,60 @@ const ResumeAnalysis = () => {
   const [selectedResumeName, setSelectedResumeName] = useState<string>('');
   const [resumeTextExtracted, setResumeTextExtracted] =
     useState<boolean>(false);
+  const [isProcessingResume, setIsProcessingResume] = useState<boolean>(false);
 
   const handleResumeSelected = async (
+    resumeId: string,
     resumeUrl: string,
     resumeName?: string
   ) => {
+    console.log('Resume selected:', { resumeId, resumeUrl, resumeName });
     setSelectedResumeUrl(resumeUrl);
     setSelectedResumeName(resumeName || 'Selected Resume');
+    setIsProcessingResume(true);
 
     try {
-      // Attempt to extract text from PDF
-      const extractedText = await extractTextFromPDF(resumeUrl);
-      setResume(extractedText);
-      setResumeTextExtracted(true);
+      console.log('Processing resume with Gemini using ID:', resumeId);
+      const resumeInfo = await geminiResumeUpload(resumeId);
+      console.log('Gemini response:', resumeInfo);
+
+      if (typeof resumeInfo === 'string') {
+        try {
+          // Try to parse the JSON response from Gemini
+          const cleanedJson = resumeInfo
+            .replace(/```json\n?|\n?```/g, '')
+            .trim();
+          console.log('Cleaned JSON:', cleanedJson);
+          const parsedResumeData = JSON.parse(cleanedJson) as ParsedResume;
+          setParsedResume(parsedResumeData);
+          setResume(cleanedJson); // Keep the raw JSON as backup
+          setResumeTextExtracted(true);
+          console.log('Successfully parsed resume data:', parsedResumeData);
+        } catch (parseError) {
+          console.error('Error parsing JSON response:', parseError);
+          console.log('Raw response that failed to parse:', resumeInfo);
+          setResume(resumeInfo);
+          setParsedResume(null);
+          setResumeTextExtracted(false);
+        }
+      } else if (resumeInfo && 'error' in resumeInfo) {
+        console.error('Gemini returned error:', resumeInfo.error);
+        setResume(resumeInfo.error);
+        setParsedResume(null);
+        setResumeTextExtracted(false);
+      } else {
+        console.error('Unexpected response format from Gemini:', resumeInfo);
+        setResume('Unexpected response format');
+        setParsedResume(null);
+        setResumeTextExtracted(false);
+      }
     } catch (error) {
-      console.error('Error extracting text:', error);
-      // If extraction fails, show a prompt for manual input
-      setResume('');
+      console.error('Error processing resume:', error);
+      setResume('Error processing resume: ' + (error as Error).message);
+      setParsedResume(null);
       setResumeTextExtracted(false);
+    } finally {
+      setIsProcessingResume(false);
     }
   };
 
@@ -79,16 +138,39 @@ const ResumeAnalysis = () => {
 
   const handleCompare = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!resume.trim() || !jobDescription.trim()) {
-      alert('Please provide both resume content and job description.');
-      return;
-    }
+
     if (!selectedResumeUrl) {
       alert('Please select or upload a resume first.');
       return;
     }
 
-    const userInput = { resume, jobDescription };
+    if (!jobDescription.trim()) {
+      alert('Please provide a job description.');
+      return;
+    }
+
+    // Use parsed resume data if available, otherwise fall back to raw text
+    let resumeData: string;
+    if (parsedResume) {
+      // Convert parsed resume back to a structured string for the API
+      resumeData = JSON.stringify(parsedResume, null, 2);
+      console.log('Using parsed resume data for comparison:', parsedResume);
+    } else {
+      // Fallback to raw resume text
+      resumeData = typeof resume === 'string' ? resume : '';
+      if (!resumeData.trim()) {
+        alert(
+          'Resume data is not available. Please select a resume and wait for it to be processed.'
+        );
+        return;
+      }
+    }
+
+    const userInput = {
+      resume: resumeData,
+      jobDescription,
+      isStructuredData: !!parsedResume, // Flag to indicate if resume is structured JSON
+    };
 
     try {
       const result = await generateComparison(userInput);
@@ -145,25 +227,56 @@ const ResumeAnalysis = () => {
                         <CardHeader>
                           <CardTitle className="flex items-center gap-2">
                             <FileText className="w-4 h-4" />
-                            Resume Content
+                            Resume Status
                           </CardTitle>
-                          <CardDescription>
-                            {resumeTextExtracted
-                              ? `Text extracted from: ${selectedResumeName}`
-                              : createResumeTextPrompt(selectedResumeName)}
-                          </CardDescription>
                         </CardHeader>
                         <CardContent>
-                          <Textarea
-                            placeholder={
-                              resumeTextExtracted
-                                ? 'Resume text extracted automatically...'
-                                : 'Please paste your resume content here for analysis...'
-                            }
-                            value={resume}
-                            onChange={(e) => setResume(e.target.value)}
-                            className="h-32 w-full"
-                          />
+                          {isProcessingResume ? (
+                            <div className="flex items-center gap-2 text-blue-500">
+                              <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                              Processing resume with AI...
+                            </div>
+                          ) : parsedResume ? (
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2 text-teal-400">
+                                <CheckCircle className="w-4 h-4" />
+                                Resume successfully processed by AI
+                              </div>
+                              <div className="text-sm text-muted-foreground">
+                                {selectedResumeName}
+                              </div>
+                              <details className="text-sm">
+                                <summary className="cursor-pointer  hover:text-teal-400">
+                                  View parsed resume data
+                                </summary>
+                                <div className="mt-2 p-3 bg-gray-100 dark:bg-gray-800 rounded text-xs max-h-32 overflow-y-auto">
+                                  <strong>Skills:</strong>{' '}
+                                  {parsedResume.skills?.join(', ') ||
+                                    'None listed'}
+                                  <br />
+                                  <strong>Experience:</strong>{' '}
+                                  {parsedResume.experience?.length || 0}{' '}
+                                  positions
+                                  <br />
+                                  <strong>Education:</strong>{' '}
+                                  {parsedResume.education?.length || 0} entries
+                                  <br />
+                                  <strong>Projects:</strong>{' '}
+                                  {parsedResume.projects?.length || 0} projects
+                                </div>
+                              </details>
+                            </div>
+                          ) : resumeTextExtracted ? (
+                            <div className="flex items-center gap-2 text-yellow-500">
+                              <AlertCircle className="w-4 h-4" />
+                              Resume processed but needs manual review
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2 text-gray-500">
+                              <AlertCircle className="w-4 h-4" />
+                              Resume selected: {selectedResumeName}
+                            </div>
+                          )}
                         </CardContent>
                       </Card>
                     </div>
@@ -189,10 +302,28 @@ const ResumeAnalysis = () => {
               <div className="mt-8">
                 <Button
                   type="submit"
-                  className="cursor-pointer bg-teal-400 text-accent-foreground dark:text-primary-foreground hover:text-primary-foreground"
+                  disabled={
+                    isProcessingResume ||
+                    !selectedResumeUrl ||
+                    !jobDescription.trim()
+                  }
+                  className="cursor-pointer bg-teal-400 text-accent-foreground dark:text-primary-foreground hover:text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Compare Resume & Job Description
+                  {isProcessingResume
+                    ? 'Processing Resume...'
+                    : !selectedResumeUrl
+                      ? 'Select a Resume First'
+                      : !jobDescription.trim()
+                        ? 'Add Job Description'
+                        : parsedResume
+                          ? 'Compare AI-Parsed Resume & Job Description'
+                          : 'Compare Resume & Job Description'}
                 </Button>
+                {parsedResume && (
+                  <p className="text-sm mt-2">
+                    ✓ Using AI-processed resume data for enhanced analysis
+                  </p>
+                )}
               </div>
             </form>
           </div>
@@ -311,7 +442,7 @@ const ResumeAnalysis = () => {
                   <TabsContent value="recommendations" className="space-y-4">
                     <Card>
                       <CardHeader>
-                        <CardTitle className="text-xl text-blue-600 dark:text-blue-400 flex items-center gap-2">
+                        <CardTitle className="text-xl text-rose-400 dark:text-blue-400 flex items-center gap-2">
                           <Lightbulb className="w-5 h-5" />
                           Actionable Recommendations
                         </CardTitle>

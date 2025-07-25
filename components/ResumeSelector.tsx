@@ -29,7 +29,11 @@ interface Resume {
 }
 
 interface ResumeSelectorProps {
-  onResumeSelected: (resumeUrl: string, resumeName?: string) => void;
+  onResumeSelected: (
+    resumeId: string,
+    resumeUrl: string,
+    resumeName?: string
+  ) => void;
   onNewResumeUploaded: (resumeUrl: string, resumeName?: string) => void;
 }
 
@@ -70,8 +74,9 @@ const ResumeSelector = ({
     );
     if (selectedResume && selectedResume.resume_url) {
       onResumeSelected(
+        selectedResume.id,
         selectedResume.resume_url,
-        selectedResume.resume_name || undefined
+        selectedResume.resume_name || 'Untitled Resume'
       );
     }
   };
@@ -154,7 +159,7 @@ const ResumeSelector = ({
                     disabled={!selectedResumeId}
                     className="w-full"
                   >
-                    Use Selected Resume
+                    Load Selected Resume for Analysis
                   </Button>
                 </>
               )}

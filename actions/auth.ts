@@ -44,6 +44,7 @@ export async function fetchJobs({ searchItem }: { searchItem: string }) {
 interface UserInput {
   resume: string;
   jobDescription: string;
+  isStructuredData?: boolean;
 }
 
 // Signout
@@ -127,6 +128,144 @@ const downloadFile = async (url: string): Promise<string> => {
   return tempFilePath;
 };
 
+export const geminiResumeUpload = async (fileId: string) => {
+  // grab the resume url from the db
+  // sent the url to the gemini api to parse through document vision
+  // decide how to handle the response
+  console.log('geminiResumeUpload called with fileId:', fileId);
+  const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      throw new Error('User not authenticated');
+    }
+    console.log('User authenticated:', session.user.id);
+
+    const userResume = await findUniqueResumes();
+    console.log('Found resumes:', userResume?.length || 0);
+
+    if (!userResume || userResume.length === 0) {
+      throw new Error('No resumes found for the user');
+    }
+    const resume = userResume.find((res) => res.id === fileId);
+    console.log('Selected resume:', resume);
+
+    if (!resume) {
+      throw new Error('Resume not found');
+    }
+    if (!resume.resume_url) {
+      throw new Error('Resume URL is empty');
+    }
+    console.log('Downloading file from URL:', resume.resume_url);
+
+    const filePath = await downloadFile(resume.resume_url);
+    console.log('File downloaded to:', filePath);
+
+    // Read the file content
+    const fileBuffer = await fs.promises.readFile(filePath);
+    console.log('File read, buffer size:', fileBuffer.length);
+
+    const contents = [
+      {
+        text: `Analyze this resume provide all of the information in a JSON format following this schema:
+        
+        
+
+        resumePdf = {
+          'languages and technologies': [list of languages and technologies],
+          'projects': [list of projects with descriptions],
+          'skills': [list of skills],
+          'qualifications': [list of qualifications],
+          'experience': [List of experiences with job title, company name, and description],
+          'education': [list of education with degree, institution, and year],
+          'certifications': [list of certifications with name and issuing organization],
+          'awards': [list of awards with name and year],
+          'volunteer experience': [list of volunteer experiences with organization name, role, and description],
+          'publications': [list of publications with title, publication name, and year],
+          'summary': [brief summary of the resume],
+        }
+
+
+      Example of expected JSON output: 
+
+      { 
+        "languages and technologies": ["JavaScript", "React", "Node.js"],
+        "projects": [
+          {
+            "title": "Portfolio Website",
+            "description": "A personal portfolio website built with React and Tailwind CSS."
+          }
+        ],
+        "skills": ["JavaScript", "React", "Node.js", "Tailwind CSS"],
+        "qualifications": ["Bachelor's in Computer Science", "Certified JavaScript Developer"],
+        "experience": [
+          {
+            "job_title": "Frontend Developer",
+            "company_name": "Tech Company",
+            "description": "Developed user interfaces using React and Redux."
+          }
+        ],
+        "education": [
+          {
+            "degree": "Bachelor's in Computer Science",
+            "institution": "University of Technology",
+            "year": 2020
+          }
+        ],
+        "certifications": [
+          {
+            "name": "Certified JavaScript Developer",
+            "issuing_organization": "JavaScript Institute"
+          }
+        ],
+        "awards": [
+          {
+            "name": "Best Developer Award",
+            "year": 2021
+          }
+        ],
+        "volunteer experience": [
+          {
+            "organization_name": "Local Non-Profit",
+            "role": "Web Developer",
+            "description": "Developed a website for the non-profit organization."
+          }
+        ],
+        "publications": [
+          {
+            "title": "Understanding React",
+            "publication_name": "Tech Journal",
+            "year": 2022
+          }
+        ],
+        "summary": "A passionate frontend developer with experience in building user-friendly web applications."
+      }`,
+      },
+
+      {
+        inlineData: {
+          mimeType: 'application/pdf',
+          data: fileBuffer.toString('base64'),
+        },
+      },
+    ];
+
+    console.log('Calling Gemini API...');
+    const response = await ai.models.generateContent({
+      model: 'gemini-1.5-flash',
+      contents: contents,
+    });
+
+    console.log('Gemini response received:', response.text);
+    return response.text;
+  } catch (error) {
+    console.error('Error uploading resume to Gemini:', error);
+    return {
+      error: 'Failed to upload resume to Gemini: ' + (error as Error).message,
+    };
+  }
+};
+
 // export const updateUser = async (input: AddUploadedResumeInput) => {
 //   try {
 //     if (!input.resume_url) {
@@ -155,11 +294,17 @@ const downloadFile = async (url: string): Promise<string> => {
 export const generateComparison = async (userInput: UserInput) => {
   const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
 
-  const prompt = `You are an application tracking system (ATS) that evaluates resumes against job descriptions.
+  const basePrompt = `You are an application tracking system (ATS) that evaluates resumes against job descriptions.
       You will receive a resume and a job description. Your task is to analyze the resume and
       provide a detailed comparison, highlighting the strengths and weaknesses of the resume
       in relation to the job description. Focus on key skills, qualifications, and experiences that match
-      the requirements of the job. Provide a score from 0 to 100, where 0 means no match and 100 means a perfect match.
+      the requirements of the job. Provide a score from 0 to 100, where 0 means no match and 100 means a perfect match.`;
+
+  const structuredDataNote = userInput.isStructuredData
+    ? `\n\nNOTE: The resume data provided below is in structured JSON format, pre-processed by AI for enhanced analysis. Use this structured data to provide more precise matching against the job requirements.`
+    : '';
+
+  const prompt = `${basePrompt}${structuredDataNote}
       
       Resume: ${userInput.resume}
       
