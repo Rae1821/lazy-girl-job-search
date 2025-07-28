@@ -43,7 +43,10 @@ const JobsPage = async (props: {
 
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4">
               {/* <DataTable data={data} /> */}
-              <Suspense key={query} fallback={<Skeleton />}>
+              <Suspense
+                key={query}
+                fallback={<Skeleton className="h-96 w-full" />}
+              >
                 <JobTable columns={columns} query={query} />
               </Suspense>
             </div>

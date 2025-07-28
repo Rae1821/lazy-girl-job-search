@@ -21,11 +21,11 @@ import {
   IconUsers,
 } from '@tabler/icons-react';
 
-import { NavDocuments } from '@/components/nav-documents';
+// import { NavDocuments } from '@/components/nav-documents';
 import { NavMain } from '@/components/nav-main';
-import { NavSecondary } from '@/components/nav-secondary';
+// import { NavSecondary } from '@/components/nav-secondary';
 import { NavUser } from '@/components/nav-user';
-import FavoriteJobs from '@/components/FavoriteJobs';
+// import FavoriteJobs from '@/components/FavoriteJobs';
 import {
   Sidebar,
   SidebarContent,
@@ -204,9 +204,7 @@ export function AppSidebar({
       <SidebarContent>
         <NavMain items={data.navMain} />
         <SidebarGroup>
-          <SidebarGroupContent>
-            <FavoriteJobs />
-          </SidebarGroupContent>
+          <SidebarGroupContent></SidebarGroupContent>
         </SidebarGroup>
         {/* <NavDocuments items={data.documents} /> */}
         {/* <NavSecondary items={data.navSecondary} className="mt-auto" /> */}

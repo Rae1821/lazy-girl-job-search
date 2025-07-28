@@ -62,7 +62,7 @@ const ApplyButton = ({
               variant="outline"
               size={size}
               disabled
-              className={`${className} border-green-200 text-green-700 bg-green-50 hover:bg-green-50`}
+              className={`${className} border-teal-500 text-teal-500 bg-green-50 hover:bg-green-50`}
             >
               <Check className="h-3 w-3 mr-1" />
               Applied
@@ -94,11 +94,10 @@ const ApplyButton = ({
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            variant="outline"
             size={size}
             onClick={handleApply}
             disabled={isLoading}
-            className={`${className} hover:bg-blue-50 hover:text-teal-400 transition-all ${
+            className={`${className} bg-teal-400 transition-all ${
               isClicked ? 'bg-green-50 text-teal-400 border-teal-400' : ''
             }`}
           >

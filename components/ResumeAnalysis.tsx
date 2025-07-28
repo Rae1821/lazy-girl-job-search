@@ -19,6 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CheckCircle, AlertCircle, Lightbulb, FileText } from 'lucide-react';
 import ResumeSelector from './ResumeSelector';
 import { extractTextFromPDF, createResumeTextPrompt } from '@/lib/pdfUtils';
+import { Skeleton } from './ui/skeleton';
 
 interface AnalysisResult {
   score: number;
@@ -60,6 +61,7 @@ const ResumeAnalysis = () => {
   const [resumeTextExtracted, setResumeTextExtracted] =
     useState<boolean>(false);
   const [isProcessingResume, setIsProcessingResume] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleResumeSelected = async (
     resumeId: string,
@@ -140,12 +142,12 @@ const ResumeAnalysis = () => {
     e.preventDefault();
 
     if (!selectedResumeUrl) {
-      alert('Please select or upload a resume first.');
+      console.log('Please select or upload a resume first.');
       return;
     }
 
     if (!jobDescription.trim()) {
-      alert('Please provide a job description.');
+      console.log('Please provide a job description.');
       return;
     }
 
@@ -159,7 +161,7 @@ const ResumeAnalysis = () => {
       // Fallback to raw resume text
       resumeData = typeof resume === 'string' ? resume : '';
       if (!resumeData.trim()) {
-        alert(
+        console.log(
           'Resume data is not available. Please select a resume and wait for it to be processed.'
         );
         return;
@@ -172,6 +174,7 @@ const ResumeAnalysis = () => {
       isStructuredData: !!parsedResume, // Flag to indicate if resume is structured JSON
     };
 
+    setLoading(true);
     try {
       const result = await generateComparison(userInput);
       console.log(result);
@@ -186,16 +189,18 @@ const ResumeAnalysis = () => {
           analysisObj = result.analysis;
         }
         setComparisonResult(analysisObj);
-        alert('Comparison completed successfully!');
+        console.log('Comparison completed successfully!');
       } else {
         setComparisonResult(null);
-        alert('Comparison failed or returned no analysis.');
+        console.log('Comparison failed or returned no analysis.');
       }
     } catch (error) {
       console.error('Error comparing resume:', error);
-      alert(
+      console.log(
         'An error occurred while processing your request. Please try again.'
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -297,27 +302,40 @@ const ResumeAnalysis = () => {
                     value={jobDescription}
                     onChange={(e) => setJobDescription(e.target.value)}
                   />
+                  {!jobDescription.trim() && (
+                    <p className="text-sm text-red-500 mt-2">
+                      Please provide a job description for analysis.
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="mt-8">
                 <Button
                   type="submit"
                   disabled={
+                    loading ||
                     isProcessingResume ||
                     !selectedResumeUrl ||
                     !jobDescription.trim()
                   }
                   className="cursor-pointer bg-teal-400 text-accent-foreground dark:text-primary-foreground hover:text-primary-foreground disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isProcessingResume
-                    ? 'Processing Resume...'
-                    : !selectedResumeUrl
-                      ? 'Select a Resume First'
-                      : !jobDescription.trim()
-                        ? 'Add Job Description'
-                        : parsedResume
-                          ? 'Compare AI-Parsed Resume & Job Description'
-                          : 'Compare Resume & Job Description'}
+                  {loading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Analyzing Resume...
+                    </div>
+                  ) : isProcessingResume ? (
+                    'Processing Resume...'
+                  ) : !selectedResumeUrl ? (
+                    'Select a Resume First'
+                  ) : !jobDescription.trim() ? (
+                    'Add Job Description'
+                  ) : parsedResume ? (
+                    'Compare AI-Parsed Resume & Job Description'
+                  ) : (
+                    'Compare Resume & Job Description'
+                  )}
                 </Button>
                 {parsedResume && (
                   <p className="text-sm mt-2">
@@ -331,7 +349,43 @@ const ResumeAnalysis = () => {
         <div className="mt-12">
           <div>
             <h2 className="text-2xl font-bold mb-4">Analysis Results</h2>
-            {comparisonResult ? (
+            {loading ? (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <div className="w-5 h-5 border-2 border-teal-400 border-t-transparent rounded-full animate-spin"></div>
+                    Analyzing Your Resume...
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="text-center text-muted-foreground">
+                      <p>
+                        Our AI is comparing your resume with the job
+                        description.
+                      </p>
+                      <p className="text-sm mt-2">
+                        This may take a few moments...
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-20" />
+                        <Skeleton className="h-16 w-full" />
+                      </div>
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-24" />
+                        <Skeleton className="h-16 w-full" />
+                      </div>
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-28" />
+                        <Skeleton className="h-16 w-full" />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : comparisonResult ? (
               <div className="space-y-6">
                 <div className="text-center">
                   <span className="text-lg font-semibold">Match Score: </span>

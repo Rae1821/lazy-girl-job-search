@@ -1,10 +1,16 @@
 'use client';
 
 import { useFavorites } from '@/contexts/FavoritesContext';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Heart, ExternalLink, MapPin, Building, Trash2 } from 'lucide-react';
+import { Heart, MapPin, Building, Trash2 } from 'lucide-react';
 import ApplyButton from '@/components/ApplyButton';
 import CopyToClipboard from '@/components/CopyToClipboard';
 import { Job } from '@/app/job-search/columns';
@@ -21,12 +27,6 @@ const FavoriteJobs = () => {
   const handleRemoveFavorite = async (job: Job) => {
     const jobId = generateJobId(job);
     await removeFromFavorites(jobId);
-  };
-
-  const handleApplyToJob = (url: string) => {
-    if (url) {
-      window.open(url, '_blank');
-    }
   };
 
   if (favorites.length === 0) {
@@ -65,24 +65,16 @@ const FavoriteJobs = () => {
         )}
       </div>
 
-      <div className="space-y-3 max-h-96 overflow-y-auto">
+      <div className="space-y-3 max-h-96 flex flex-row flex-wrap gap-4">
         {favorites.map((job) => (
-          <Card key={generateJobId(job)} className="p-3">
-            <div className="space-y-2">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-sm line-clamp-1">
+          <Card key={generateJobId(job)} className="p-3 w-[250px]">
+            <div className="space-y-3">
+              <CardHeader className="flex items-start justify-between gap-2 px-0">
+                <CardTitle>
+                  <h4 className="font-medium text-sm line-clamp-2">
                     {job.job_title}
                   </h4>
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                    <Building className="h-3 w-3 shrink-0" />
-                    <span className="truncate">{job.employer_name}</span>
-                  </div>
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
-                    <MapPin className="h-3 w-3 shrink-0" />
-                    <span className="truncate">{job.job_location}</span>
-                  </div>
-                </div>
+                </CardTitle>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -91,7 +83,18 @@ const FavoriteJobs = () => {
                 >
                   <Heart className="h-3 w-3 fill-red-500 text-red-500" />
                 </Button>
-              </div>
+              </CardHeader>
+
+              <CardContent className="flex flex-col min-w-0 px-0">
+                <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                  <Building className="h-3 w-3 shrink-0" />
+                  <span className="truncate">{job.employer_name}</span>
+                </div>
+                <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                  <MapPin className="h-3 w-3 shrink-0" />
+                  <span className="truncate">{job.job_location}</span>
+                </div>
+              </CardContent>
 
               <div className="flex items-center gap-2">
                 {job.job_is_remote && (
@@ -101,7 +104,7 @@ const FavoriteJobs = () => {
                 )}
               </div>
 
-              <div className="flex items-center gap-2">
+              <CardFooter className="flex items-center gap-2 mt-6 px-0">
                 <ApplyButton job={job} className="flex-1 h-7 text-xs" />
                 <CopyToClipboard
                   text={job.job_description}
@@ -109,7 +112,7 @@ const FavoriteJobs = () => {
                   className="h-7 px-2"
                   showText={false}
                 />
-              </div>
+              </CardFooter>
             </div>
           </Card>
         ))}

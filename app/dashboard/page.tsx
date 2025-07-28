@@ -1,5 +1,4 @@
 import { AppSidebar } from '@/components/app-sidebar';
-import { ChartAreaInteractive } from '@/components/chart-area-interactive';
 import { SiteHeader } from '@/components/site-header';
 import AppliedJobsStats from '@/components/AppliedJobsStats';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
@@ -36,9 +35,6 @@ export default async function Page() {
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
               {/* <SectionCards /> */}
               <AppliedJobsStats />
-              <div className="px-4 lg:px-6">
-                <ChartAreaInteractive />
-              </div>
               {/* <DataTable data={data} /> */}
               {/* <JobTable /> */}
             </div>

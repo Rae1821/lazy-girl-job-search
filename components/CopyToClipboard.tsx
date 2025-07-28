@@ -90,7 +90,11 @@ const CopyToClipboard = ({
           </Button>
         </TooltipTrigger>
         <TooltipContent>
-          <p>{isCopied ? 'Copied to clipboard!' : 'Copy to clipboard'}</p>
+          <p>
+            {isCopied
+              ? 'Copied to clipboard!'
+              : 'Copy job description to clipboard'}
+          </p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
